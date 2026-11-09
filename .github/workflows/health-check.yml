@@ -1,0 +1,30 @@
+name: Daily health check
+
+# Daily health check for the 10-tool free workflow.
+# Runs on GitHub's free tier: a public repo has unlimited Actions minutes;
+# a private repo gets 2,000 free minutes/month on Linux runners.
+# This job takes ~1 minute per run, ~30 minutes/month -- well within the free tier.
+on:
+  schedule:
+    # 01:00 UTC daily = 09:00 Asia/Singapore
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Run health checks
+        run: bash scripts/health-check.sh
+
+      - name: Upload health-check log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-log
+          path: health-check.log
+          retention-days: 30
